@@ -102,7 +102,7 @@
             background: radial-gradient(circle, var(--accent-glow) 0%, rgba(0,255,204,0) 70%);
             border-radius: 50%;
             transform: translate(-50%, -50%);
-            filter: blur(120px); /* Increased blur for softness */
+            filter: blur(120px); 
             z-index: -1; 
             pointer-events: none;
             animation: breathe 8s infinite alternate ease-in-out;
@@ -122,7 +122,7 @@
         }
 
         @keyframes breathe {
-            0% { opacity: 0.15; transform: translate(-50%, -50%) scale(0.95); } /* More transparent */
+            0% { opacity: 0.15; transform: translate(-50%, -50%) scale(0.95); } 
             100% { opacity: 0.35; transform: translate(-50%, -50%) scale(1.05); }
         }
 
@@ -476,7 +476,9 @@
             .hero-content h2 { font-size: 1.2rem; }
             .nav-links { display: none; }
             section { padding: 60px 0; }
-            #ambient-glow, #network-canvas, .cursor-dot, .cursor-ring { display: none; }
+            
+            /* Disabled custom cursor and giant ambient glow for mobile, but KEPT the network canvas */
+            #ambient-glow, .cursor-dot, .cursor-ring { display: none; }
             body, a, button, .btn { cursor: auto; }
         }
     </style>
@@ -485,7 +487,9 @@
 
     <div class="cursor-dot" id="cursor-dot"></div>
     <div class="cursor-ring" id="cursor-ring"></div>
+    
     <canvas id="network-canvas"></canvas>
+    
     <div id="ambient-glow"></div>
 
     <nav>
@@ -633,17 +637,44 @@
             }
             if (window.innerWidth > 768) animateGlow();
 
+            // --- Network Canvas Logic ---
             const canvas = document.getElementById('network-canvas');
             const ctx = canvas.getContext('2d');
-            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-            const particles = []; const particleCount = 65; const connectionDistance = 250; 
+            canvas.width = window.innerWidth; 
+            canvas.height = window.innerHeight;
+            
+            const particles = []; 
+            // Scale particle count and connection distance based on screen size
+            const isMobile = window.innerWidth <= 768;
+            const particleCount = isMobile ? 35 : 65; // Fewer particles on mobile for performance
+            const connectionDistance = isMobile ? 150 : 250; // Shorter lines on mobile
 
             class Particle {
-                constructor() { this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height; this.vx = (Math.random() - 0.5) * 0.2; this.vy = (Math.random() - 0.5) * 0.2; this.radius = Math.random() * 1.5 + 0.5; }
-                update() { this.x += this.vx; this.y += this.vy; if (this.x > canvas.width) this.x = 0; if (this.x < 0) this.x = canvas.width; if (this.y > canvas.height) this.y = 0; if (this.y < 0) this.y = canvas.height; }
-                draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = 'rgba(0, 255, 204, 0.18)'; ctx.fill(); }
+                constructor() { 
+                    this.x = Math.random() * canvas.width; 
+                    this.y = Math.random() * canvas.height; 
+                    this.vx = (Math.random() - 0.5) * 0.2; 
+                    this.vy = (Math.random() - 0.5) * 0.2; 
+                    this.radius = Math.random() * 1.5 + 0.5; 
+                }
+                update() { 
+                    this.x += this.vx; 
+                    this.y += this.vy; 
+                    if (this.x > canvas.width) this.x = 0; 
+                    if (this.x < 0) this.x = canvas.width; 
+                    if (this.y > canvas.height) this.y = 0; 
+                    if (this.y < 0) this.y = canvas.height; 
+                }
+                draw() { 
+                    ctx.beginPath(); 
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); 
+                    ctx.fillStyle = 'rgba(0, 255, 204, 0.18)'; 
+                    ctx.fill(); 
+                }
             }
+            
             for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+            
             function animateCanvas() {
                 requestAnimationFrame(animateCanvas);
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -659,7 +690,9 @@
                     }
                 }
             }
-            if (window.innerWidth > 768) animateCanvas();
+            
+            // Start the animation unconditionally so it runs on mobile too
+            animateCanvas();
         });
     </script>
 
